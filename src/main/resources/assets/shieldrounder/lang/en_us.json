@@ -1,0 +1,11 @@
+{
+	"modmenu.nameTranslation.shieldrounder": "Eymistaken's Shield Rounder",
+	"modmenu.summaryTranslation.shieldrounder": "Shows the protective hemisphere of raised shields.",
+	"modmenu.descriptionTranslation.shieldrounder": "Shows the protective hemisphere of raised shields.",
+	"shieldrounder.config.title": "Eymistaken's Shield Rounder",
+	"shieldrounder.config.enabled": "Enabled",
+	"shieldrounder.config.show_on_self": "Show On Self",
+	"shieldrounder.config.on": "On",
+	"shieldrounder.config.off": "Off",
+	"shieldrounder.config.done": "Done"
+}

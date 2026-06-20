@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "shieldrounder",
+	"version": "${version}",
+	"name": "Eymistaken's Shield Rounder",
+	"description": "Visualizes the protective hemisphere of actively raised shields.",
+	"authors": [
+		"eymistaken"
+	],
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.eymistaken.shieldrounder.ShieldRounderClient"
+		],
+		"modmenu": [
+			"com.eymistaken.shieldrounder.config.ShieldRounderModMenu"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "1.21.11",
+		"java": ">=21",
+		"fabric-api": ">=0.141.3+1.21.11",
+		"modmenu": ">=17.0.0-beta.2"
+	}
+}

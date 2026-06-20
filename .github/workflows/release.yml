@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Read mod version
+        id: version
+        shell: bash
+        run: |
+          version="$(grep -E '^mod_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')"
+          if [[ -z "$version" ]]; then
+            echo "mod_version was not found in gradle.properties" >&2
+            exit 1
+          fi
+
+          tag="v${version}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${tag}" ]]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match gradle.properties version ${tag}" >&2
+            exit 1
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Collect release files
+        shell: bash
+        run: |
+          mkdir -p release
+          cp build/libs/*.jar release/
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          title="Eymistaken's Shield Rounder ${VERSION}"
+          notes="Automated build for version ${VERSION}."
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" release/*.jar --clobber
+          else
+            gh release create "${TAG}" release/*.jar \
+              --target "${GITHUB_SHA}" \
+              --title "${title}" \
+              --notes "${notes}"
+          fi
