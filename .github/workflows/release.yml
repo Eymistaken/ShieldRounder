@@ -3,15 +3,16 @@ name: Build and Release
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches:
+      - "**"
+  pull_request:
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build and publish release
+  build:
+    name: Build and optionally publish release
     runs-on: ubuntu-latest
 
     steps:
@@ -48,16 +49,38 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
+      - name: Check if release is needed
+        id: release_check
+        shell: bash
+        run: |
+          should_release=false
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            before="${{ github.event.before }}"
+            if [[ -n "${before}" && "${before}" != "0000000000000000000000000000000000000000" ]] \
+              && git cat-file -e "${before}:gradle.properties" 2>/dev/null; then
+              previous_version="$(git show "${before}:gradle.properties" | grep -E '^mod_version=' | cut -d= -f2- | tr -d '[:space:]' || true)"
+              current_version="${{ steps.version.outputs.version }}"
+              if [[ -n "${previous_version}" && "${previous_version}" != "${current_version}" ]]; then
+                should_release=true
+              fi
+            fi
+          fi
+
+          echo "should_release=${should_release}" >> "$GITHUB_OUTPUT"
+
       - name: Build
         run: ./gradlew build
 
       - name: Collect release files
+        if: steps.release_check.outputs.should_release == 'true'
         shell: bash
         run: |
           mkdir -p release
           cp build/libs/*.jar release/
 
       - name: Publish GitHub release
+        if: steps.release_check.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
@@ -66,6 +89,11 @@ jobs:
         run: |
           title="Eymistaken's Shield Rounder ${VERSION}"
           notes="Automated build for version ${VERSION}."
+
+          if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            git tag "${TAG}" "${GITHUB_SHA}"
+            git push origin "refs/tags/${TAG}"
+          fi
 
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release upload "${TAG}" release/*.jar --clobber
