@@ -38,6 +38,7 @@ jobs:
           minecraft_version="$(grep -E '^minecraft_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')"
           loader_version="$(grep -E '^loader_version=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')"
           archives_base_name="$(grep -E '^archives_base_name=' gradle.properties | cut -d= -f2- | tr -d '[:space:]')"
+          
           if [[ -z "$version" ]]; then
             echo "mod_version was not found in gradle.properties" >&2
             exit 1
@@ -49,11 +50,7 @@ jobs:
 
           tag="v${version}"
           artifact="${archives_base_name}-${version}.jar"
-          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" != "${tag}" ]]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match gradle.properties version ${tag}" >&2
-            exit 1
-          fi
-
+          
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "minecraft_version=${minecraft_version}" >> "$GITHUB_OUTPUT"
           echo "loader_version=${loader_version}" >> "$GITHUB_OUTPUT"
@@ -64,17 +61,16 @@ jobs:
         id: release_check
         shell: bash
         run: |
+          tag="${{ steps.version.outputs.tag }}"
           should_release=false
 
-          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            before="${{ github.event.before }}"
-            if [[ -n "${before}" && "${before}" != "0000000000000000000000000000000000000000" ]] \
-              && git cat-file -e "${before}:gradle.properties" 2>/dev/null; then
-              previous_version="$(git show "${before}:gradle.properties" | grep -E '^mod_version=' | cut -d= -f2- | tr -d '[:space:]' || true)"
-              current_version="${{ steps.version.outputs.version }}"
-              if [[ -n "${previous_version}" && "${previous_version}" != "${current_version}" ]]; then
-                should_release=true
-              fi
+          # PR olmayan push'larda veya manuel tetiklemelerde tag yoksa release başlatır
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]] || [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+              echo "Tag ${tag} bulunamadı, yeni release oluşturulacak."
+              should_release=true
+            else
+              echo "Tag ${tag} zaten mevcut, release atlanıyor."
             fi
           fi
 
@@ -103,16 +99,14 @@ jobs:
           title="Eymistaken's Shield Rounder ${VERSION}"
           notes="Automated build for Minecraft ${MINECRAFT_VERSION} with Fabric Loader ${LOADER_VERSION}."
 
-          if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
-            git tag "${TAG}" "${GITHUB_SHA}"
-            git push origin "refs/tags/${TAG}"
-          fi
+          # GitHub Actions botu için Git kimliği tanımlıyoruz
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if gh release view "${TAG}" >/dev/null 2>&1; then
-            gh release upload "${TAG}" release/*.jar --clobber
-          else
-            gh release create "${TAG}" release/*.jar \
-              --target "${GITHUB_SHA}" \
-              --title "${title}" \
-              --notes "${notes}"
-          fi
+          git tag "${TAG}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${TAG}"
+
+          gh release create "${TAG}" release/*.jar \
+            --target "${GITHUB_SHA}" \
+            --title "${title}" \
+            --notes "${notes}"
