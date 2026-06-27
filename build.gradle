@@ -1,5 +1,5 @@
 plugins {
-	id "net.fabricmc.fabric-loom-remap" version "${loom_version}"
+	id "net.fabricmc.fabric-loom" version "${loom_version}"
 	id "maven-publish"
 }
 
@@ -28,11 +28,10 @@ repositories {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraft_version}"
-	mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
-	modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
-	modRuntimeOnly "eu.pb4:placeholder-api:${placeholder_api_version}"
+	implementation "net.fabricmc:fabric-loader:${loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+	implementation "com.terraformersmc:modmenu:${modmenu_version}"
+	runtimeOnly "eu.pb4:placeholder-api:${placeholder_api_version}"
 
 	testImplementation platform("org.junit:junit-bom:${junit_version}")
 	testImplementation "org.junit.jupiter:junit-jupiter"
@@ -48,7 +47,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	options.release = 21
+	options.release = 25
 }
 
 tasks.test {
@@ -57,8 +56,8 @@ tasks.test {
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 publishing {

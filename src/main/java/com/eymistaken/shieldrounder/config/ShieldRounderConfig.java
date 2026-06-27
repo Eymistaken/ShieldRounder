@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class ShieldRounderConfig {
+	private static final int CURRENT_CONFIG_VERSION = 2;
 	public static final int MIN_COLOR = 0;
 	public static final int MAX_COLOR = 255;
 	public static final float MIN_ALPHA = 0.0F;
@@ -27,6 +28,7 @@ public final class ShieldRounderConfig {
 	private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve(ShieldRounderClient.MOD_ID + ".json");
 	private static ShieldRounderConfig instance = new ShieldRounderConfig();
 
+	public int configVersion = CURRENT_CONFIG_VERSION;
 	public boolean enabled = true;
 	public boolean includeSelf = true;
 	public RenderMode renderMode = RenderMode.WIREFRAME;
@@ -40,10 +42,19 @@ public final class ShieldRounderConfig {
 	public boolean dynamicDurabilityColor = false;
 	public boolean blockFlash = false;
 	public boolean deploymentAnimation = false;
-	public boolean enchantmentGlint = false;
+	public boolean enchantmentGlint = true;
 
 	public static ShieldRounderConfig get() {
 		return instance;
+	}
+
+	public static ShieldRounderConfig defaults() {
+		return new ShieldRounderConfig();
+	}
+
+	public static void reset() {
+		instance = defaults();
+		save();
 	}
 
 	public static void load() {
@@ -58,7 +69,9 @@ public final class ShieldRounderConfig {
 		} catch (IOException | RuntimeException ignored) {
 			instance = new ShieldRounderConfig();
 		}
+		instance.migrateValues();
 		instance.clampValues();
+		save();
 	}
 
 	public static void save() {
@@ -87,6 +100,13 @@ public final class ShieldRounderConfig {
 		lineWidth = clamp(lineWidth, MIN_LINE_WIDTH, MAX_LINE_WIDTH);
 		meridians = clamp(meridians, MIN_MERIDIANS, MAX_MERIDIANS);
 		rings = clamp(rings, MIN_RINGS, MAX_RINGS);
+	}
+
+	private void migrateValues() {
+		if (configVersion < 2) {
+			enchantmentGlint = true;
+		}
+		configVersion = CURRENT_CONFIG_VERSION;
 	}
 
 	private static int clamp(int value, int min, int max) {

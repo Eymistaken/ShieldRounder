@@ -99,4 +99,23 @@ final class HemisphereMeshTest {
 		assertEquals(0.5F, ShieldHemisphereRenderer.deploymentProgress(10L, 11L, 0.5F), 1.0E-5F);
 		assertEquals(1.0F, ShieldHemisphereRenderer.deploymentProgress(10L, 13L, 0.0F), 1.0E-5F);
 	}
+
+	@Test
+	void glintLineColorIsVisibleAndPurple() {
+		ShieldHemisphereRenderer.RenderColor color = ShieldHemisphereRenderer.glintColor(new Vector3f(0.2F, 0.4F, 0.6F), 20L, 0.5F, 170);
+
+		assertTrue(color.alpha() >= 90);
+		assertTrue(color.blue() > color.green());
+		assertTrue(color.red() > color.green());
+	}
+
+	@Test
+	void glintSurfaceColorIsSubtleAndPurple() {
+		ShieldHemisphereRenderer.RenderColor color = ShieldHemisphereRenderer.glintSurfaceColor(new Vector3f(0.2F, 0.4F, 0.6F), 20L, 0.5F, 170);
+
+		assertTrue(color.alpha() >= 35);
+		assertTrue(color.alpha() <= 95);
+		assertTrue(color.blue() > color.green());
+		assertTrue(color.red() > color.green());
+	}
 }

@@ -20,6 +20,8 @@
 	"shieldrounder.config.line_width": "Line Width",
 	"shieldrounder.config.meridians": "Meridians",
 	"shieldrounder.config.rings": "Rings",
+	"shieldrounder.config.reset": "Reset",
+	"shieldrounder.config.reset_settings": "Reset Settings",
 	"shieldrounder.config.on": "On",
 	"shieldrounder.config.off": "Off",
 	"shieldrounder.config.done": "Done"
