@@ -106,7 +106,7 @@ public final class ShieldHemisphereRenderer {
 			RenderColor renderColor = color;
 			float deploymentProgress = config.deploymentAnimation ? deploymentProgress(state.usingSinceTick, worldTime, tickDelta) : 1.0F;
 			Vec3 center = interpolatedPosition(player, tickDelta).add(0.0D, CENTER_HEIGHT, 0.0D);
-			Vector3f forward = horizontalShieldForward(player, tickDelta);
+			Vector3f forward = horizontalShieldForward(player.getYRot(), player.getViewYRot(tickDelta), player == client.player);
 			boolean renderGlint = config.enchantmentGlint && hasShieldGlint(shield);
 
 			if (renderSurface) {
@@ -165,8 +165,9 @@ public final class ShieldHemisphereRenderer {
 		return null;
 	}
 
-	private static Vector3f horizontalShieldForward(Player player, float tickDelta) {
-		float headYaw = Mth.rotLerp(tickDelta, player.yHeadRotO, player.yHeadRot);
+	static Vector3f horizontalShieldForward(float currentViewYaw, float interpolatedHeadYaw, boolean localPlayer) {
+		// Mouse input changes the local view between ticks, before the head rotation catches up.
+		float headYaw = localPlayer ? currentViewYaw : interpolatedHeadYaw;
 		Vec3 direction = Vec3.directionFromRotation(0.0F, headYaw);
 		return new Vector3f((float) direction.x, 0.0F, (float) direction.z).normalize();
 	}
