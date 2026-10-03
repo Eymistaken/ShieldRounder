@@ -85,7 +85,10 @@ public final class ShieldHemisphereRenderer {
 		ShieldRounderConfig config = ShieldRounderConfig.get();
 		float tickDelta = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 		long worldTime = client.level.getLevelData().getGameTime();
-		Vec3 cameraPos = cameraPosition(context, client);
+		Vec3 cameraPos = cameraPosition(context);
+		if (cameraPos == null) {
+			return;
+		}
 		boolean renderLines = config.renderMode != ShieldRounderConfig.RenderMode.SOLID;
 		boolean renderSurface = config.renderMode != ShieldRounderConfig.RenderMode.WIREFRAME;
 
@@ -154,12 +157,12 @@ public final class ShieldHemisphereRenderer {
 		return player.getPosition(tickDelta);
 	}
 
-	private static Vec3 cameraPosition(LevelRenderContext context, Minecraft client) {
+	private static Vec3 cameraPosition(LevelRenderContext context) {
 		CameraRenderState cameraState = context.levelState().cameraRenderState;
 		if (cameraState != null && cameraState.initialized && cameraState.pos != null) {
 			return cameraState.pos;
 		}
-		return client.gameRenderer.mainCamera().position();
+		return null;
 	}
 
 	private static Vector3f horizontalShieldForward(Player player, float tickDelta) {

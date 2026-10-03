@@ -1,6 +1,7 @@
 package com.eymistaken.shieldrounder.config;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
@@ -8,6 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 public final class ShieldRounderConfigScreen extends Screen {
@@ -20,6 +22,7 @@ public final class ShieldRounderConfigScreen extends Screen {
 	private static final int CONTENT_TOP = 40;
 	private static final int FOOTER_HEIGHT = 36;
 	private static final int SETTING_ROWS = 15;
+	private static final Method SCREEN_SETTER = findScreenSetter();
 	private final Screen parent;
 	private int scrollOffset;
 	private int maxScroll;
@@ -123,7 +126,26 @@ public final class ShieldRounderConfigScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		Minecraft.getInstance().gui.setScreen(parent);
+		Minecraft client = Minecraft.getInstance();
+		Object screenOwner = SCREEN_SETTER.getDeclaringClass() == Gui.class ? client.gui : client;
+		try {
+			SCREEN_SETTER.invoke(screenOwner, parent);
+		} catch (ReflectiveOperationException exception) {
+			throw new IllegalStateException("Failed to return to the parent screen", exception);
+		}
+	}
+
+	private static Method findScreenSetter() {
+		// Screen ownership moved from Minecraft to Gui in 26.2.
+		try {
+			return Gui.class.getMethod("setScreen", Screen.class);
+		} catch (NoSuchMethodException exception) {
+			try {
+				return Minecraft.class.getMethod("setScreen", Screen.class);
+			} catch (NoSuchMethodException legacyException) {
+				throw new ExceptionInInitializerError(legacyException);
+			}
+		}
 	}
 
 	@Override
