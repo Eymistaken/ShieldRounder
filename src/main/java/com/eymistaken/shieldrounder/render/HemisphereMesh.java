@@ -17,7 +17,7 @@ public final class HemisphereMesh {
 		Basis basis = Basis.fromForward(forward);
 
 		List<LineSegment> segments = new ArrayList<>();
-		Vector3f centerPoint = new Vector3f();
+		Vector3f centerPoint = pointOnHemisphere(basis, radius, 0.0F, 0.0F);
 
 		for (int ring = 1; ring <= rings; ring++) {
 			float polar = (float) (ring * Math.PI * 0.5D / rings);
@@ -58,7 +58,7 @@ public final class HemisphereMesh {
 	public static List<Quad> createFaces(Vector3f forward, float radius, int meridians, int rings) {
 		Basis basis = Basis.fromForward(forward);
 		List<Quad> quads = new ArrayList<>();
-		Vector3f centerPoint = new Vector3f();
+		Vector3f centerPoint = pointOnHemisphere(basis, radius, 0.0F, 0.0F);
 
 		for (int ring = 1; ring <= rings; ring++) {
 			float innerPolar = (float) ((ring - 1) * Math.PI * 0.5D / rings);

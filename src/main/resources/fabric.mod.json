@@ -8,6 +8,7 @@
 		"eymistaken"
 	],
 	"license": "MIT",
+	"icon": "assets/shieldrounder/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [

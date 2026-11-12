@@ -2,7 +2,7 @@
 
 ShieldRounder is a client-side Fabric mod that visualizes the protective hemisphere of actively raised shields, with wireframe and solid render modes and a Mod Menu configuration screen.
 
-Version 1.0.3 uses the same JAR for Minecraft 26.1, 26.1.1, 26.1.2, 26.2, and 26.3. Install Java 25, Fabric Loader 0.19.3 or newer, and Fabric API and Mod Menu releases matching your Minecraft version. Fabric Loader 0.19.5 is used for the current development build.
+Version 1.0.4 uses the same JAR for Minecraft 26.1, 26.1.1, 26.1.2, 26.2, and 26.3. Install Java 25, Fabric Loader 0.19.3 or newer, and Fabric API and Mod Menu releases matching your Minecraft version. Fabric Loader 0.19.5 is used for the current development build.
 
 ## Compatibility
 
@@ -30,7 +30,7 @@ Use Java 25:
 ./gradlew clean build --refresh-dependencies --stacktrace
 ```
 
-The distributable is `build/libs/shield-rounder-1.0.3.jar`. Dependencies are not bundled; use releases matching the game version.
+The distributable is `build/libs/shield-rounder-1.0.4.jar`. Dependencies are not bundled; use releases matching the game version.
 
 To test the current 26.3 production bytecode with the 26.2 dependencies, first run the default build, then run:
 
